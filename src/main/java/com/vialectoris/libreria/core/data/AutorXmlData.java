@@ -45,7 +45,7 @@ public class AutorXmlData {
     }
 
     /**
-     * Método insertar ordenado por apellidos
+     * Método insertar (adiciona al final del archivo)
      */
     public void insertar(Autor autor) {
         try {
@@ -56,27 +56,14 @@ public class AutorXmlData {
 
             // Crear elemento para el nuevo autor
             Element elementoAutor = new Element("autor");
-            elementoAutor.addContent(new Element("idAutor").setText(String.valueOf(autor.getIdAutor())));
+            elementoAutor.setAttribute("idAutor", String.valueOf(autor.getIdAutor()));
+
             elementoAutor.addContent(new Element("nombre").setText(autor.getNombre()));
             elementoAutor.addContent(new Element("apellidos").setText(autor.getApellidos()));
             elementoAutor.addContent(new Element("nacionalidad").setText(autor.getNacionalidad()));
 
-            // Obtener todos los autores para ordenar por apellidos
-            List<Element> autoresExistentes = raiz.getChildren("autor");
-
-            // Encontrar la posición correcta para insertar basada en los apellidos
-            int indiceInsercion = 0;
-            for (Element autorExistente : autoresExistentes) {
-                String apellidosExistente = autorExistente.getChildText("apellidos");
-                if (autor.getApellidos().compareTo(apellidosExistente) >= 0) {
-                    indiceInsercion++;
-                } else {
-                    break;
-                }
-            }
-
-            // Insertar en la posición correcta
-            raiz.addContent(indiceInsercion, elementoAutor);
+            // Adicionar al final del archivo
+            raiz.addContent(elementoAutor);
 
             // Guardar el documento
             XMLOutputter xmlOutput = new XMLOutputter();
@@ -89,7 +76,39 @@ public class AutorXmlData {
     }
 
     /**
-     * Método findAutorById (retorna un único registro)
+     * Método findAll (retorna todos los registros de autor presentes en el archivo)
+     * El método debe retornar un Set de autores
+     */
+    public Set<Autor> findAll() {
+        Set<Autor> autoresSet = new HashSet<>();
+
+        try {
+            SAXBuilder builder = new SAXBuilder();
+            Document documento = builder.build(new File(rutaArchivo));
+            Element raiz = documento.getRootElement();
+
+            List<Element> autores = raiz.getChildren("autor");
+
+            for (Element autorElement : autores) {
+                int id = Integer.parseInt(autorElement.getAttributeValue("idAutor"));
+                Autor autor = new Autor();
+                autor.setIdAutor(id);
+                autor.setNombre(autorElement.getChildText("nombre"));
+                autor.setApellidos(autorElement.getChildText("apellidos"));
+                autor.setNacionalidad(autorElement.getChildText("nacionalidad"));
+
+                autoresSet.add(autor);
+            }
+
+        } catch (JDOMException | IOException e) {
+            e.printStackTrace();
+        }
+
+        return autoresSet;
+    }
+
+    /**
+     * Método adicional para buscar autor por ID (útil para LibroXmlData)
      */
     public Optional<Autor> findAutorById(int idAutor) {
         try {
@@ -100,7 +119,7 @@ public class AutorXmlData {
             List<Element> autores = raiz.getChildren("autor");
 
             for (Element autorElement : autores) {
-                int id = Integer.parseInt(autorElement.getChildText("idAutor"));
+                int id = Integer.parseInt(autorElement.getAttributeValue("idAutor"));
                 if (id == idAutor) {
                     Autor autor = new Autor();
                     autor.setIdAutor(id);
@@ -117,71 +136,5 @@ public class AutorXmlData {
         }
 
         return Optional.empty();
-    }
-
-    /**
-     * Método findAutoresByNacionalidad (retorna varios registros)
-     */
-    public Map<Integer, Autor> findAutoresByNacionalidad(String nacionalidad) {
-        Map<Integer, Autor> autoresMap = new HashMap<>();
-
-        try {
-            SAXBuilder builder = new SAXBuilder();
-            Document documento = builder.build(new File(rutaArchivo));
-            Element raiz = documento.getRootElement();
-
-            List<Element> autores = raiz.getChildren("autor");
-
-            for (Element autorElement : autores) {
-                String nacionalidadAutor = autorElement.getChildText("nacionalidad");
-
-                if (nacionalidadAutor.equalsIgnoreCase(nacionalidad)) {
-                    int id = Integer.parseInt(autorElement.getChildText("idAutor"));
-                    Autor autor = new Autor();
-                    autor.setIdAutor(id);
-                    autor.setNombre(autorElement.getChildText("nombre"));
-                    autor.setApellidos(autorElement.getChildText("apellidos"));
-                    autor.setNacionalidad(nacionalidadAutor);
-
-                    autoresMap.put(id, autor);
-                }
-            }
-
-        } catch (JDOMException | IOException e) {
-            e.printStackTrace();
-        }
-
-        return autoresMap;
-    }
-
-    /**
-     * Método para obtener todos los autores
-     */
-    public Map<Integer, Autor> findAllAutores() {
-        Map<Integer, Autor> autoresMap = new HashMap<>();
-
-        try {
-            SAXBuilder builder = new SAXBuilder();
-            Document documento = builder.build(new File(rutaArchivo));
-            Element raiz = documento.getRootElement();
-
-            List<Element> autores = raiz.getChildren("autor");
-
-            for (Element autorElement : autores) {
-                int id = Integer.parseInt(autorElement.getChildText("idAutor"));
-                Autor autor = new Autor();
-                autor.setIdAutor(id);
-                autor.setNombre(autorElement.getChildText("nombre"));
-                autor.setApellidos(autorElement.getChildText("apellidos"));
-                autor.setNacionalidad(autorElement.getChildText("nacionalidad"));
-
-                autoresMap.put(id, autor);
-            }
-
-        } catch (JDOMException | IOException e) {
-            e.printStackTrace();
-        }
-
-        return autoresMap;
     }
 }
