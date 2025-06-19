@@ -13,7 +13,6 @@ public class Libro {
         this.autores = new ArrayList<>();
     }
 
-    // CONSTRUCTOR FALTANTE - AGREGAR ESTE
     public Libro(String isbn, String titulo, int annoPublicacion) {
         this.isbn = isbn;
         this.titulo = titulo;
@@ -25,7 +24,7 @@ public class Libro {
         this.isbn = isbn;
         this.titulo = titulo;
         this.annoPublicacion = annoPublicacion;
-        this.autores = new ArrayList<>(autores);
+        this.autores = new ArrayList<>(autores); // Copia defensiva
     }
 
     public String getIsbn() {
@@ -57,14 +56,14 @@ public class Libro {
     }
 
     public void setAutores(List<Autor> autores) {
-        this.autores = autores;
+        this.autores = new ArrayList<>(autores); // Copia defensiva
     }
 
-    public void addAutor (Autor autor){
+    public void addAutor(Autor autor) {
         this.autores.add(autor);
     }
 
-    public void removeAutor(Autor autor){
+    public void removeAutor(Autor autor) {
         this.autores.remove(autor);
     }
 }

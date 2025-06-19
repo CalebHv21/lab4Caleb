@@ -13,29 +13,25 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 class LibroXmlDataTest {
-    private static final String rutaArchivo = "libros_test.xml";
+    private String rutaArchivo;
     private LibroXmlData libroData;
     private List<Autor> autores;
 
     @BeforeEach
     void setup() {
+        // Usar un archivo diferente para cada test para evitar interferencias
+        rutaArchivo = "libros_test_" + UUID.randomUUID().toString() + ".xml";
+
         try {
-            // Eliminar archivo de prueba si existe
+            // Eliminar archivo de prueba si existe (por si acaso)
             File archivo = new File(rutaArchivo);
             if (archivo.exists()) {
                 archivo.delete();
-
-                // Esperar un momento para asegurarse de que el sistema de archivos procese la eliminación
-                Thread.sleep(100);
-            }
-
-            // Asegurarse de que el archivo realmente se ha eliminado
-            if (archivo.exists()) {
-                throw new RuntimeException("No se pudo eliminar el archivo de prueba existente");
             }
 
             // Crear nueva instancia de LibroXmlData
@@ -44,7 +40,7 @@ class LibroXmlDataTest {
             // Crear lista de autores para usar en los tests
             autores = new ArrayList<>();
             autores.add(new Autor(1, "Gabriel", "García Márquez", "Colombiana"));
-        } catch (InterruptedException e) {
+        } catch (Exception e) {
             e.printStackTrace();
             throw new RuntimeException("Error en la configuración de la prueba", e);
         }

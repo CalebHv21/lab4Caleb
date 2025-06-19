@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<libros>
+  <libro ISBN="123">
+    <titulo>Cien años de soledad</titulo>
+    <annoPublicacion>1967</annoPublicacion>
+    <idsAutores>
+      <idAutor>1</idAutor>
+    </idsAutores>
+  </libro>
+</libros>

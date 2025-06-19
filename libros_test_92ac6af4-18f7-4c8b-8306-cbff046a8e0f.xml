@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<libros>
+  <libro ISBN="222">
+    <titulo>Aventuras</titulo>
+    <annoPublicacion>1980</annoPublicacion>
+    <idsAutores>
+      <idAutor>1</idAutor>
+    </idsAutores>
+  </libro>
+  <libro ISBN="111">
+    <titulo>Zoología</titulo>
+    <annoPublicacion>1990</annoPublicacion>
+    <idsAutores>
+      <idAutor>1</idAutor>
+    </idsAutores>
+  </libro>
+</libros>

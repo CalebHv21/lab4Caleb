@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<libros>
+  <libro ISBN="456">
+    <titulo>El amor en los tiempos del cólera</titulo>
+    <annoPublicacion>1985</annoPublicacion>
+    <idsAutores>
+      <idAutor>1</idAutor>
+    </idsAutores>
+  </libro>
+</libros>
