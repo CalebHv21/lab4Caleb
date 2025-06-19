@@ -7,33 +7,4 @@
       <idAutor>1</idAutor>
     </idsAutores>
   </libro>
-  <libro ISBN="222">
-    <titulo>El amor en los tiempos del cólera</titulo>
-    <annoPublicacion>1985</annoPublicacion>
-    <idsAutores>
-      <idAutor>1</idAutor>
-      <idAutor>2</idAutor>
-    </idsAutores>
-  </libro>
-  <libro ISBN="333">
-    <titulo>La casa de los espíritus</titulo>
-    <annoPublicacion>1982</annoPublicacion>
-    <idsAutores>
-      <idAutor>2</idAutor>
-    </idsAutores>
-  </libro>
-  <libro ISBN="123">
-    <titulo>Cien años de soledad</titulo>
-    <annoPublicacion>1967</annoPublicacion>
-    <idsAutores>
-      <idAutor>1</idAutor>
-    </idsAutores>
-  </libro>
-  <libro ISBN="456">
-    <titulo>El amor en los tiempos del cólera</titulo>
-    <annoPublicacion>1985</annoPublicacion>
-    <idsAutores>
-      <idAutor>1</idAutor>
-    </idsAutores>
-  </libro>
 </libros>

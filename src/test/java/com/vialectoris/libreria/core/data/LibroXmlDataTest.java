@@ -23,30 +23,31 @@ class LibroXmlDataTest {
 
     @BeforeEach
     void setup() {
-        // Eliminar archivo de prueba si existe y asegurar que se elimine correctamente
-        File archivo = new File(rutaArchivo);
-        if (archivo.exists()) {
-            boolean eliminado = archivo.delete();
-            if (!eliminado) {
-                // Forzar eliminación en caso de problemas
-                System.gc(); // Sugerir recolección de basura para liberar recursos
-                try {
-                    Thread.sleep(100); // Pequeña pausa
-                    if (archivo.exists()) {
-                        archivo.deleteOnExit(); // Programar eliminación al salir
-                    }
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
+        try {
+            // Eliminar archivo de prueba si existe
+            File archivo = new File(rutaArchivo);
+            if (archivo.exists()) {
+                archivo.delete();
+
+                // Esperar un momento para asegurarse de que el sistema de archivos procese la eliminación
+                Thread.sleep(100);
             }
+
+            // Asegurarse de que el archivo realmente se ha eliminado
+            if (archivo.exists()) {
+                throw new RuntimeException("No se pudo eliminar el archivo de prueba existente");
+            }
+
+            // Crear nueva instancia de LibroXmlData
+            libroData = new LibroXmlData(rutaArchivo);
+
+            // Crear lista de autores para usar en los tests
+            autores = new ArrayList<>();
+            autores.add(new Autor(1, "Gabriel", "García Márquez", "Colombiana"));
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+            throw new RuntimeException("Error en la configuración de la prueba", e);
         }
-
-        // Crear nueva instancia de LibroXmlData
-        libroData = new LibroXmlData(rutaArchivo);
-
-        // Crear lista de autores para usar en los tests
-        autores = new ArrayList<>();
-        autores.add(new Autor(1, "Gabriel", "García Márquez", "Colombiana"));
     }
 
     @Test

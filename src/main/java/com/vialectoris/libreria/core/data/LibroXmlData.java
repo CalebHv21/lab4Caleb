@@ -43,12 +43,30 @@ public class LibroXmlData {
      */
     private void crearArchivoVacio() {
         try {
+            // Asegurarse de que el directorio existe
+            File archivo = new File(rutaArchivo);
+            if (archivo.exists()) {
+                archivo.delete();
+            }
+
+            // Si es necesario, crear el directorio padre
+            File directorio = archivo.getParentFile();
+            if (directorio != null && !directorio.exists()) {
+                directorio.mkdirs();
+            }
+
+            // Crear el archivo XML con estructura básica
             Element raiz = new Element("libros");
             Document documento = new Document(raiz);
 
             XMLOutputter xmlOutput = new XMLOutputter();
             xmlOutput.setFormat(Format.getPrettyFormat());
-            xmlOutput.output(documento, new FileOutputStream(rutaArchivo));
+
+            // Usar FileOutputStream en modo que sobrescriba el archivo si existe
+            FileOutputStream fos = new FileOutputStream(rutaArchivo);
+            xmlOutput.output(documento, fos);
+            fos.close();
+
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -57,21 +75,16 @@ public class LibroXmlData {
 
     public void insertar(Libro libro) {
         try {
-            // Cargar el documento existente o crear uno nuevo si no existe
-            Document documento;
-            Element raiz;
+            // Verificar si el archivo existe, si no, crearlo
             File archivoXml = new File(rutaArchivo);
-
             if (!archivoXml.exists() || archivoXml.length() == 0) {
-                // Si el archivo no existe o está vacío, crear un nuevo documento
-                raiz = new Element("libros");
-                documento = new Document(raiz);
-            } else {
-                // Cargar el documento existente
-                SAXBuilder builder = new SAXBuilder();
-                documento = builder.build(archivoXml);
-                raiz = documento.getRootElement();
+                crearArchivoVacio();
             }
+
+            // Cargar el documento existente
+            SAXBuilder builder = new SAXBuilder();
+            Document documento = builder.build(new File(rutaArchivo));
+            Element raiz = documento.getRootElement();
 
             // Obtener todos los libros existentes
             List<Element> librosExistentes = raiz.getChildren("libro");
@@ -100,18 +113,27 @@ public class LibroXmlData {
             elementoLibro.addContent(idsAutores);
 
             // Encontrar la posición correcta para insertar basada en el título
+            // CAMBIO: Reescribimos completamente esta lógica
             int indiceInsercion = 0;
-            for (Element libroExistente : librosExistentes) {
+            boolean insertado = false;
+
+            for (int i = 0; i < librosExistentes.size() && !insertado; i++) {
+                Element libroExistente = librosExistentes.get(i);
                 String tituloExistente = libroExistente.getChildText("titulo");
-                if (tituloExistente != null && libro.getTitulo().compareTo(tituloExistente) > 0) {
-                    indiceInsercion++;
-                } else {
-                    break;
+
+                // Si el título del nuevo libro es alfabéticamente menor, insertar aquí
+                if (tituloExistente != null && libro.getTitulo().compareTo(tituloExistente) < 0) {
+                    raiz.addContent(i, elementoLibro);
+                    insertado = true;
                 }
+
+                indiceInsercion = i + 1;
             }
 
-            // Insertar en la posición correcta
-            raiz.addContent(indiceInsercion, elementoLibro);
+            // Si no se insertó en ningún lugar intermedio, añadir al final
+            if (!insertado) {
+                raiz.addContent(elementoLibro);
+            }
 
             // Guardar el documento
             XMLOutputter xmlOutput = new XMLOutputter();
@@ -182,35 +204,36 @@ public class LibroXmlData {
         Map<String, Libro> librosMap = new HashMap<>();
 
         try {
-            SAXBuilder builder = new SAXBuilder();
+            // Verificar si el archivo existe
             File archivoXml = new File(rutaArchivo);
-
             if (!archivoXml.exists() || archivoXml.length() == 0) {
                 return librosMap; // Retornar mapa vacío si no hay archivo
             }
 
+            SAXBuilder builder = new SAXBuilder();
             Document documento = builder.build(archivoXml);
             Element raiz = documento.getRootElement();
 
             List<Element> libros = raiz.getChildren("libro");
 
+            // Recorrer todos los libros
             for (Element libroElement : libros) {
                 Element idsAutoresElement = libroElement.getChild("idsAutores");
 
                 if (idsAutoresElement != null) {
-                    List<Element> idAutorElements = idsAutoresElement.getChildren("idAutor");
-                    boolean contieneSolicitado = false;
+                    boolean autorEncontrado = false;
 
-                    // Primero verificar si el libro contiene al autor solicitado
-                    for (Element idAutorElement : idAutorElements) {
-                        if (Integer.parseInt(idAutorElement.getText()) == idAutor) {
-                            contieneSolicitado = true;
+                    // Verificar si el autor buscado está entre los autores del libro
+                    for (Element idAutorElement : idsAutoresElement.getChildren("idAutor")) {
+                        int autorId = Integer.parseInt(idAutorElement.getText());
+                        if (autorId == idAutor) {
+                            autorEncontrado = true;
                             break;
                         }
                     }
 
-                    // Si contiene al autor solicitado, procesarlo
-                    if (contieneSolicitado) {
+                    // Si el autor está entre los autores del libro, agregarlo al mapa
+                    if (autorEncontrado) {
                         String isbn = libroElement.getAttributeValue("ISBN");
                         if (isbn != null) {
                             Libro libro = new Libro();
@@ -218,15 +241,15 @@ public class LibroXmlData {
                             libro.setTitulo(libroElement.getChildText("titulo"));
                             libro.setAnnoPublicacion(Integer.parseInt(libroElement.getChildText("annoPublicacion")));
 
-                            // Añadir solo los autores relevantes al libro
-                            for (Element autorElement : idAutorElements) {
-                                int autorId = Integer.parseInt(autorElement.getText());
+                            // Recrear todos los autores del libro
+                            for (Element idAutorElement : idsAutoresElement.getChildren("idAutor")) {
+                                int autorId = Integer.parseInt(idAutorElement.getText());
 
                                 Autor autorTemp = new Autor();
                                 autorTemp.setIdAutor(autorId);
 
                                 if (autorXmlData != null) {
-                                    // Obtener datos completos del autor si disponible
+                                    // Obtener datos completos del autor
                                     Optional<Autor> autorCompleto = autorXmlData.findAutorById(autorId);
                                     if (autorCompleto.isPresent()) {
                                         libro.addAutor(autorCompleto.get());
