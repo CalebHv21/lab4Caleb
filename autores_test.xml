@@ -10,4 +10,14 @@
     <apellidos>Allende</apellidos>
     <nacionalidad>Chilena</nacionalidad>
   </autor>
+  <autor idAutor="1">
+    <nombre>Gabriel</nombre>
+    <apellidos>García Márquez</apellidos>
+    <nacionalidad>Colombiana</nacionalidad>
+  </autor>
+  <autor idAutor="2">
+    <nombre>Isabel</nombre>
+    <apellidos>Allende</apellidos>
+    <nacionalidad>Chilena</nacionalidad>
+  </autor>
 </autores>

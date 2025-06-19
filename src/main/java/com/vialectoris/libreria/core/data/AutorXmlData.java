@@ -33,6 +33,13 @@ public class AutorXmlData {
      */
     private void crearArchivoVacio() {
         try {
+            // Asegurarse de que el directorio existe
+            File archivo = new File(rutaArchivo);
+            File directorio = archivo.getParentFile();
+            if (directorio != null && !directorio.exists()) {
+                directorio.mkdirs();
+            }
+
             Element raiz = new Element("autores");
             Document documento = new Document(raiz);
 
@@ -49,9 +56,15 @@ public class AutorXmlData {
      */
     public void insertar(Autor autor) {
         try {
+            // Verificar si el archivo existe, si no, crearlo
+            File archivoXml = new File(rutaArchivo);
+            if (!archivoXml.exists() || archivoXml.length() == 0) {
+                crearArchivoVacio();
+            }
+
             // Cargar el documento existente
             SAXBuilder builder = new SAXBuilder();
-            Document documento = builder.build(new File(rutaArchivo));
+            Document documento = builder.build(archivoXml);
             Element raiz = documento.getRootElement();
 
             // Crear elemento para el nuevo autor
@@ -83,8 +96,14 @@ public class AutorXmlData {
         Set<Autor> autoresSet = new HashSet<>();
 
         try {
+            // Verificar si el archivo existe o está vacío
+            File archivoXml = new File(rutaArchivo);
+            if (!archivoXml.exists() || archivoXml.length() == 0) {
+                return autoresSet; // Retornar conjunto vacío si no hay archivo o está vacío
+            }
+
             SAXBuilder builder = new SAXBuilder();
-            Document documento = builder.build(new File(rutaArchivo));
+            Document documento = builder.build(archivoXml);
             Element raiz = documento.getRootElement();
 
             List<Element> autores = raiz.getChildren("autor");
@@ -112,8 +131,14 @@ public class AutorXmlData {
      */
     public Optional<Autor> findAutorById(int idAutor) {
         try {
+            // Verificar si el archivo existe o está vacío
+            File archivoXml = new File(rutaArchivo);
+            if (!archivoXml.exists() || archivoXml.length() == 0) {
+                return Optional.empty(); // Retornar Optional vacío si no hay archivo o está vacío
+            }
+
             SAXBuilder builder = new SAXBuilder();
-            Document documento = builder.build(new File(rutaArchivo));
+            Document documento = builder.build(archivoXml);
             Element raiz = documento.getRootElement();
 
             List<Element> autores = raiz.getChildren("autor");
