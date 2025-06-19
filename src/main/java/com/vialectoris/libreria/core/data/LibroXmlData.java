@@ -54,15 +54,24 @@ public class LibroXmlData {
         }
     }
 
-    /**
-     * Método insertar ordenado por el título
-     */
+   
     public void insertar(Libro libro) {
         try {
             // Cargar el documento existente
             SAXBuilder builder = new SAXBuilder();
             Document documento = builder.build(new File(rutaArchivo));
             Element raiz = documento.getRootElement();
+
+            // Obtener todos los libros existentes
+            List<Element> librosExistentes = raiz.getChildren("libro");
+
+            // Verificar si ya existe un libro con este ISBN
+            for (Element libroExistente : librosExistentes) {
+                if (libroExistente.getAttributeValue("ISBN").equals(libro.getIsbn())) {
+                    // Ya existe un libro con este ISBN, no insertar
+                    return;
+                }
+            }
 
             // Crear elemento para el nuevo libro
             Element elementoLibro = new Element("libro");
@@ -77,9 +86,6 @@ public class LibroXmlData {
                 idsAutores.addContent(new Element("idAutor").setText(String.valueOf(autor.getIdAutor())));
             }
             elementoLibro.addContent(idsAutores);
-
-            // Obtener todos los libros para ordenar por título
-            List<Element> librosExistentes = raiz.getChildren("libro");
 
             // Encontrar la posición correcta para insertar basada en el título
             int indiceInsercion = 0;
