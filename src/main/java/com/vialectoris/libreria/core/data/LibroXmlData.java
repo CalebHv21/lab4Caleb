@@ -57,10 +57,21 @@ public class LibroXmlData {
 
     public void insertar(Libro libro) {
         try {
-            // Cargar el documento existente
-            SAXBuilder builder = new SAXBuilder();
-            Document documento = builder.build(new File(rutaArchivo));
-            Element raiz = documento.getRootElement();
+            // Cargar el documento existente o crear uno nuevo si no existe
+            Document documento;
+            Element raiz;
+            File archivoXml = new File(rutaArchivo);
+
+            if (!archivoXml.exists() || archivoXml.length() == 0) {
+                // Si el archivo no existe o está vacío, crear un nuevo documento
+                raiz = new Element("libros");
+                documento = new Document(raiz);
+            } else {
+                // Cargar el documento existente
+                SAXBuilder builder = new SAXBuilder();
+                documento = builder.build(archivoXml);
+                raiz = documento.getRootElement();
+            }
 
             // Obtener todos los libros existentes
             List<Element> librosExistentes = raiz.getChildren("libro");
@@ -92,7 +103,7 @@ public class LibroXmlData {
             int indiceInsercion = 0;
             for (Element libroExistente : librosExistentes) {
                 String tituloExistente = libroExistente.getChildText("titulo");
-                if (libro.getTitulo().compareTo(tituloExistente) >= 0) {
+                if (tituloExistente != null && libro.getTitulo().compareTo(tituloExistente) > 0) {
                     indiceInsercion++;
                 } else {
                     break;
@@ -172,7 +183,13 @@ public class LibroXmlData {
 
         try {
             SAXBuilder builder = new SAXBuilder();
-            Document documento = builder.build(new File(rutaArchivo));
+            File archivoXml = new File(rutaArchivo);
+
+            if (!archivoXml.exists() || archivoXml.length() == 0) {
+                return librosMap; // Retornar mapa vacío si no hay archivo
+            }
+
+            Document documento = builder.build(archivoXml);
             Element raiz = documento.getRootElement();
 
             List<Element> libros = raiz.getChildren("libro");
@@ -182,37 +199,46 @@ public class LibroXmlData {
 
                 if (idsAutoresElement != null) {
                     List<Element> idAutorElements = idsAutoresElement.getChildren("idAutor");
+                    boolean contieneSolicitado = false;
 
+                    // Primero verificar si el libro contiene al autor solicitado
                     for (Element idAutorElement : idAutorElements) {
                         if (Integer.parseInt(idAutorElement.getText()) == idAutor) {
-                            String isbn = libroElement.getAttributeValue("ISBN");
-                            if (isbn != null) {
-                                Libro libro = new Libro();
-                                libro.setIsbn(isbn);
-                                libro.setTitulo(libroElement.getChildText("titulo"));
-                                libro.setAnnoPublicacion(Integer.parseInt(libroElement.getChildText("annoPublicacion")));
+                            contieneSolicitado = true;
+                            break;
+                        }
+                    }
 
-                                // Obtener todos los autores del libro
-                                for (Element autorElement : idAutorElements) {
-                                    int autorId = Integer.parseInt(autorElement.getText());
+                    // Si contiene al autor solicitado, procesarlo
+                    if (contieneSolicitado) {
+                        String isbn = libroElement.getAttributeValue("ISBN");
+                        if (isbn != null) {
+                            Libro libro = new Libro();
+                            libro.setIsbn(isbn);
+                            libro.setTitulo(libroElement.getChildText("titulo"));
+                            libro.setAnnoPublicacion(Integer.parseInt(libroElement.getChildText("annoPublicacion")));
 
-                                    if (autorXmlData != null) {
-                                        // Obtener datos completos del autor
-                                        Optional<Autor> autorCompleto = autorXmlData.findAutorById(autorId);
-                                        if (autorCompleto.isPresent()) {
-                                            libro.addAutor(autorCompleto.get());
-                                        }
+                            // Añadir solo los autores relevantes al libro
+                            for (Element autorElement : idAutorElements) {
+                                int autorId = Integer.parseInt(autorElement.getText());
+
+                                Autor autorTemp = new Autor();
+                                autorTemp.setIdAutor(autorId);
+
+                                if (autorXmlData != null) {
+                                    // Obtener datos completos del autor si disponible
+                                    Optional<Autor> autorCompleto = autorXmlData.findAutorById(autorId);
+                                    if (autorCompleto.isPresent()) {
+                                        libro.addAutor(autorCompleto.get());
                                     } else {
-                                        // Solo crear autor con ID como antes
-                                        Autor autorTemp = new Autor();
-                                        autorTemp.setIdAutor(autorId);
                                         libro.addAutor(autorTemp);
                                     }
+                                } else {
+                                    libro.addAutor(autorTemp);
                                 }
-
-                                librosMap.put(isbn, libro);
                             }
-                            break;
+
+                            librosMap.put(isbn, libro);
                         }
                     }
                 }

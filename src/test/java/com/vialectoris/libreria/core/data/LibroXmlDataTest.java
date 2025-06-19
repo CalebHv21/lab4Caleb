@@ -23,8 +23,24 @@ class LibroXmlDataTest {
 
     @BeforeEach
     void setup() {
-        // Eliminar archivo de prueba si existe
-        new File(rutaArchivo).delete();
+        // Eliminar archivo de prueba si existe y asegurar que se elimine correctamente
+        File archivo = new File(rutaArchivo);
+        if (archivo.exists()) {
+            boolean eliminado = archivo.delete();
+            if (!eliminado) {
+                // Forzar eliminación en caso de problemas
+                System.gc(); // Sugerir recolección de basura para liberar recursos
+                try {
+                    Thread.sleep(100); // Pequeña pausa
+                    if (archivo.exists()) {
+                        archivo.deleteOnExit(); // Programar eliminación al salir
+                    }
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+
         // Crear nueva instancia de LibroXmlData
         libroData = new LibroXmlData(rutaArchivo);
 
