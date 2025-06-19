@@ -1,5 +1,7 @@
 package com.vialectoris.libreria.core.domain;
 
+import java.util.Objects;
+
 public class Autor {
     private int idAutor;
     private String nombre;
@@ -46,5 +48,19 @@ public class Autor {
 
     public void setNacionalidad(String nacionalidad) {
         this.nacionalidad = nacionalidad;
+    }
+
+    // Necesarios para que Set<Autor> funcione correctamente
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (obj == null || getClass() != obj.getClass()) return false;
+        Autor autor = (Autor) obj;
+        return idAutor == autor.idAutor;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(idAutor);
     }
 }
