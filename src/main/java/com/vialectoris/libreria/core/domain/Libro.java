@@ -13,6 +13,14 @@ public class Libro {
         this.autores = new ArrayList<>();
     }
 
+    // CONSTRUCTOR FALTANTE - AGREGAR ESTE
+    public Libro(String isbn, String titulo, int annoPublicacion) {
+        this.isbn = isbn;
+        this.titulo = titulo;
+        this.annoPublicacion = annoPublicacion;
+        this.autores = new ArrayList<>();
+    }
+
     public Libro(String isbn, String titulo, int annoPublicacion, List<Autor> autores) {
         this.isbn = isbn;
         this.titulo = titulo;

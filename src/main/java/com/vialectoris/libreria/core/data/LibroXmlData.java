@@ -67,7 +67,8 @@ public class LibroXmlData {
 
             // Verificar si ya existe un libro con este ISBN
             for (Element libroExistente : librosExistentes) {
-                if (libroExistente.getAttributeValue("ISBN").equals(libro.getIsbn())) {
+                String isbnExistente = libroExistente.getAttributeValue("ISBN");
+                if (isbnExistente != null && isbnExistente.equals(libro.getIsbn())) {
                     // Ya existe un libro con este ISBN, no insertar
                     return;
                 }
@@ -123,7 +124,8 @@ public class LibroXmlData {
             List<Element> libros = raiz.getChildren("libro");
 
             for (Element libroElement : libros) {
-                if (libroElement.getAttributeValue("ISBN").equals(isbn)) {
+                String isbnExistente = libroElement.getAttributeValue("ISBN");
+                if (isbnExistente != null && isbnExistente.equals(isbn)) {
                     Libro libro = new Libro();
                     libro.setIsbn(isbn);
                     libro.setTitulo(libroElement.getChildText("titulo"));
@@ -184,30 +186,32 @@ public class LibroXmlData {
                     for (Element idAutorElement : idAutorElements) {
                         if (Integer.parseInt(idAutorElement.getText()) == idAutor) {
                             String isbn = libroElement.getAttributeValue("ISBN");
-                            Libro libro = new Libro();
-                            libro.setIsbn(isbn);
-                            libro.setTitulo(libroElement.getChildText("titulo"));
-                            libro.setAnnoPublicacion(Integer.parseInt(libroElement.getChildText("annoPublicacion")));
+                            if (isbn != null) {
+                                Libro libro = new Libro();
+                                libro.setIsbn(isbn);
+                                libro.setTitulo(libroElement.getChildText("titulo"));
+                                libro.setAnnoPublicacion(Integer.parseInt(libroElement.getChildText("annoPublicacion")));
 
-                            // Obtener todos los autores del libro
-                            for (Element autorElement : idAutorElements) {
-                                int autorId = Integer.parseInt(autorElement.getText());
+                                // Obtener todos los autores del libro
+                                for (Element autorElement : idAutorElements) {
+                                    int autorId = Integer.parseInt(autorElement.getText());
 
-                                if (autorXmlData != null) {
-                                    // Obtener datos completos del autor
-                                    Optional<Autor> autorCompleto = autorXmlData.findAutorById(autorId);
-                                    if (autorCompleto.isPresent()) {
-                                        libro.addAutor(autorCompleto.get());
+                                    if (autorXmlData != null) {
+                                        // Obtener datos completos del autor
+                                        Optional<Autor> autorCompleto = autorXmlData.findAutorById(autorId);
+                                        if (autorCompleto.isPresent()) {
+                                            libro.addAutor(autorCompleto.get());
+                                        }
+                                    } else {
+                                        // Solo crear autor con ID como antes
+                                        Autor autorTemp = new Autor();
+                                        autorTemp.setIdAutor(autorId);
+                                        libro.addAutor(autorTemp);
                                     }
-                                } else {
-                                    // Solo crear autor con ID como antes
-                                    Autor autorTemp = new Autor();
-                                    autorTemp.setIdAutor(autorId);
-                                    libro.addAutor(autorTemp);
                                 }
-                            }
 
-                            librosMap.put(isbn, libro);
+                                librosMap.put(isbn, libro);
+                            }
                             break;
                         }
                     }
