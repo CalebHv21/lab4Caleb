@@ -16,6 +16,7 @@ import java.util.*;
 
 public class LibroXmlData {
     private String rutaArchivo;
+    private AutorXmlData autorXmlData; // Para obtener datos completos de autores
 
     /**
      * Constructor que verifica si el archivo existe y lo crea si no
@@ -27,6 +28,14 @@ public class LibroXmlData {
         if (!archivo.exists()) {
             crearArchivoVacio();
         }
+    }
+
+    /**
+     * Constructor que permite inyectar AutorXmlData
+     */
+    public LibroXmlData(String rutaArchivo, AutorXmlData autorXmlData) {
+        this(rutaArchivo);
+        this.autorXmlData = autorXmlData;
     }
 
     /**
@@ -114,15 +123,25 @@ public class LibroXmlData {
                     libro.setTitulo(libroElement.getChildText("titulo"));
                     libro.setAnnoPublicacion(Integer.parseInt(libroElement.getChildText("annoPublicacion")));
 
-                    // Aquí solo guardamos los IDs de los autores, ya que necesitaríamos AutorXmlData para obtener los detalles completos
+                    // Obtener autores completos si tenemos AutorXmlData
                     Element idsAutoresElement = libroElement.getChild("idsAutores");
                     if (idsAutoresElement != null) {
                         List<Element> idAutorElements = idsAutoresElement.getChildren("idAutor");
                         for (Element idAutorElement : idAutorElements) {
                             int idAutor = Integer.parseInt(idAutorElement.getText());
-                            Autor autorTemp = new Autor();
-                            autorTemp.setIdAutor(idAutor);
-                            libro.addAutor(autorTemp);
+
+                            if (autorXmlData != null) {
+                                // Obtener datos completos del autor
+                                Optional<Autor> autorCompleto = autorXmlData.findAutorById(idAutor);
+                                if (autorCompleto.isPresent()) {
+                                    libro.addAutor(autorCompleto.get());
+                                }
+                            } else {
+                                // Solo crear autor con ID como antes
+                                Autor autorTemp = new Autor();
+                                autorTemp.setIdAutor(idAutor);
+                                libro.addAutor(autorTemp);
+                            }
                         }
                     }
 
@@ -167,9 +186,19 @@ public class LibroXmlData {
                             // Obtener todos los autores del libro
                             for (Element autorElement : idAutorElements) {
                                 int autorId = Integer.parseInt(autorElement.getText());
-                                Autor autorTemp = new Autor();
-                                autorTemp.setIdAutor(autorId);
-                                libro.addAutor(autorTemp);
+
+                                if (autorXmlData != null) {
+                                    // Obtener datos completos del autor
+                                    Optional<Autor> autorCompleto = autorXmlData.findAutorById(autorId);
+                                    if (autorCompleto.isPresent()) {
+                                        libro.addAutor(autorCompleto.get());
+                                    }
+                                } else {
+                                    // Solo crear autor con ID como antes
+                                    Autor autorTemp = new Autor();
+                                    autorTemp.setIdAutor(autorId);
+                                    libro.addAutor(autorTemp);
+                                }
                             }
 
                             librosMap.put(isbn, libro);
